@@ -60,13 +60,13 @@
         android:layout_margin="4dp"
         android:orientation="horizontal">
 
-        <Switch
+        <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/idleSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Device Idle" />
 
-        <Switch
+        <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/chargingSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

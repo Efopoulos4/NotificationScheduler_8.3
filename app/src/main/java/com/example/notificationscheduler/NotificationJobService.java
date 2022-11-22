@@ -19,7 +19,7 @@ public class NotificationJobService extends JobService {
         createNotificationChannel();
         PendingIntent contentPendingIntent = PendingIntent.getActivity(this,
                 0, new Intent(this, MainActivity.class),
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+                PendingIntent.FLAG_MUTABLE );
         Notification.Builder builder = null;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             builder = new Notification.Builder(this, PRIMARY_CHANNEL_ID)

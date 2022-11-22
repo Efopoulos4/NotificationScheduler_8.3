@@ -1,6 +1,7 @@
 package com.example.notificationscheduler;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
@@ -9,7 +10,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,10 +17,10 @@ import org.w3c.dom.Text;
 
 public class MainActivity extends AppCompatActivity {
     private JobScheduler mScheduler;
-    private static final int JOB_ID = 0;
-    private Switch mDeviceIdleSwitch;
-    private Switch mDeviceChargingSwitch;
+    private SwitchCompat mDeviceIdleSwitch;
+    private SwitchCompat mDeviceChargingSwitch;
     private SeekBar mSeekBar;
+    private static final int JOB_ID = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,11 +30,7 @@ public class MainActivity extends AppCompatActivity {
         mDeviceIdleSwitch = findViewById(R.id.idleSwitch);
         mDeviceChargingSwitch = findViewById(R.id.chargingSwitch);
         mSeekBar = findViewById(R.id.seekBar);
-
         final TextView seekBarProgress = findViewById(R.id.seekBarProgress);
-
-        mScheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
-
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
@@ -66,14 +62,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void scheduleJob(View view) {
+        int seekBarInteger = mSeekBar.getProgress();
+        boolean seekBarSet = seekBarInteger > 0;
         RadioGroup networkOptions = findViewById(R.id.networkOptions);
         int selectedNetworkID = networkOptions.getCheckedRadioButtonId();
         int selectedNetworkOption = JobInfo.NETWORK_TYPE_NONE;
 
-        int seekBarInteger = mSeekBar.getProgress();
-        boolean seekBarSet = seekBarInteger > 0;
 
-        switch (selectedNetworkID){
+        switch (selectedNetworkID) {
             case R.id.noNetwork:
                 selectedNetworkOption = JobInfo.NETWORK_TYPE_NONE;
                 break;
@@ -84,19 +80,21 @@ public class MainActivity extends AppCompatActivity {
                 selectedNetworkOption = JobInfo.NETWORK_TYPE_UNMETERED;
                 break;
         }
+
+        mScheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
+
         ComponentName serviceName = new ComponentName(getPackageName(),
                 NotificationJobService.class.getName());
-        JobInfo.Builder builder = new JobInfo.Builder(JOB_ID, serviceName)
-                .setRequiredNetworkType(selectedNetworkOption)
-                .setRequiresDeviceIdle(mDeviceIdleSwitch.isChecked())
-                .setRequiresCharging(mDeviceChargingSwitch.isChecked());
+        JobInfo.Builder builder = new JobInfo.Builder(JOB_ID, serviceName);
+        builder.setRequiredNetworkType(selectedNetworkOption);
+        builder.setRequiresDeviceIdle(mDeviceIdleSwitch.isChecked());
+        builder.setRequiresCharging(mDeviceChargingSwitch.isChecked());
 
-        if(seekBarSet){
+        if (seekBarSet) {
             builder.setOverrideDeadline(seekBarInteger * 1000);
         }
 
-        boolean constraintSet = selectedNetworkOption
-                != JobInfo.NETWORK_TYPE_NONE
+        boolean constraintSet = (selectedNetworkOption != JobInfo.NETWORK_TYPE_NONE)
                 || mDeviceChargingSwitch.isChecked()
                 || mDeviceIdleSwitch.isChecked()
                 || seekBarSet;
