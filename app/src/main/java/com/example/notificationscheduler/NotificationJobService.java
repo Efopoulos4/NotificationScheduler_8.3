@@ -1,58 +1,45 @@
 package com.example.notificationscheduler;
 
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.job.JobParameters;
 import android.app.job.JobService;
-import android.content.Intent;
-import android.graphics.Color;
-import android.os.Build;
+import android.util.Log;
+import android.widget.Toast;
 
 public class NotificationJobService extends JobService {
-    NotificationManager mNotifyManager;
-    private static final String PRIMARY_CHANNEL_ID = "primary_notification_channel";
 
+    private boolean jobCancelled = false;
     @Override
     public boolean onStartJob(JobParameters jobParameters) {
-        createNotificationChannel();
-        PendingIntent contentPendingIntent = PendingIntent.getActivity(this,
-                0, new Intent(this, MainActivity.class),
-                PendingIntent.FLAG_MUTABLE );
-        Notification.Builder builder = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            builder = new Notification.Builder(this, PRIMARY_CHANNEL_ID)
-                    .setContentTitle("Job Service")
-                    .setContentText("Your Job ran to completion")
-                    .setContentIntent(contentPendingIntent)
-                    .setSmallIcon(R.drawable.ic_job_running)
-                    .setPriority(Notification.PRIORITY_HIGH)
-                    .setDefaults(Notification.DEFAULT_ALL)
-                    .setAutoCancel(true);
-        }
+        doInBackground(jobParameters);
+        jobCancelled = false;
+        return true;
+    }
 
-        mNotifyManager.notify(0, builder.build());
-        return false;
+    private void doInBackground(JobParameters jobParameters) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for(int i = 0 ; i < 20 ; i++){
+                    if(jobCancelled){
+                        return;
+                    }
+                    Log.d("paok", "run: "+ i);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                Log.d("paok", " Job finished: ");
+                jobFinished(jobParameters, false);
+            }
+        }).start();
     }
 
     @Override
     public boolean onStopJob(JobParameters jobParameters) {
+        Toast.makeText(NotificationJobService.this, "Job cancelled before completion: ", Toast.LENGTH_SHORT).show();
+        jobCancelled = true;
         return true;
-    }
-
-    public void createNotificationChannel() {
-        mNotifyManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel notificationChannel = new NotificationChannel(PRIMARY_CHANNEL_ID,
-                    "Job Service notification",
-                    NotificationManager.IMPORTANCE_HIGH);
-            notificationChannel.enableLights(true);
-            notificationChannel.setLightColor(Color.RED);
-            notificationChannel.enableVibration(true);
-            notificationChannel.setDescription("Notification from Job Service");
-            mNotifyManager.createNotificationChannel(notificationChannel);
-
-        }
     }
 }
