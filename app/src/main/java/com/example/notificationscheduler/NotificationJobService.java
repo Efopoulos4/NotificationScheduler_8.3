@@ -9,6 +9,7 @@ import android.app.job.JobService;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
+import android.util.Log;
 
 public class NotificationJobService extends JobService {
     NotificationManager mNotifyManager;
@@ -23,8 +24,7 @@ public class NotificationJobService extends JobService {
         Notification.Builder builder = null;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             builder = new Notification.Builder(this, PRIMARY_CHANNEL_ID)
-                    .setContentTitle("Job Service")
-                    .setContentText("Your Job ran to completion")
+                    .setContentTitle("Download")
                     .setContentIntent(contentPendingIntent)
                     .setSmallIcon(R.drawable.ic_job_running)
                     .setPriority(Notification.PRIORITY_HIGH)
@@ -45,12 +45,12 @@ public class NotificationJobService extends JobService {
         mNotifyManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel notificationChannel = new NotificationChannel(PRIMARY_CHANNEL_ID,
-                    "Job Service notification",
+                    "Download notification",
                     NotificationManager.IMPORTANCE_HIGH);
             notificationChannel.enableLights(true);
             notificationChannel.setLightColor(Color.RED);
             notificationChannel.enableVibration(true);
-            notificationChannel.setDescription("Notification from Job Service");
+            notificationChannel.setDescription("Notification from Download");
             mNotifyManager.createNotificationChannel(notificationChannel);
 
         }
